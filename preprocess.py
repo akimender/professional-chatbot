@@ -11,7 +11,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 nltk.download('punkt')
 nltk.download('stopwords')
 
-file_path = 'data/user_bot.txt'
+file_path = 'data/simple.txt'
 
 ###
 # Returns a string by reading from a txt file
@@ -45,8 +45,8 @@ def preprocess_text(text):
     bot_responses = [pair[1] for pair in pairs]
 
     # allows for shared vocabulary between inputs and bot responses
-    tokenizer = Tokenizer(oov_token="<OOV>")
-    tokenizer.fit_on_texts(user_inputs + bot_responses)
+    tokenizer = Tokenizer(oov_token="<OOV>", filters='')
+    tokenizer.fit_on_texts(user_inputs + ['<start> ' + r + ' <end>' for r in bot_responses])
     word_index = tokenizer.word_index
 
     with open("tokenizer.pkl", "wb") as f:
@@ -54,7 +54,7 @@ def preprocess_text(text):
 
     # converts the tokens to sequences
     input_sequences = tokenizer.texts_to_sequences(user_inputs)
-    target_sequences = tokenizer.texts_to_sequences(bot_responses)
+    target_sequences = tokenizer.texts_to_sequences(['<start> ' + r + ' <end>' for r in bot_responses])
 
     # pads the sequences by finding the max length of the sequence
     max_input_len = max(len(seq) for seq in input_sequences)
@@ -66,16 +66,6 @@ def preprocess_text(text):
 
 processed_sequences = preprocess_text(text) # sends sequences to model.py as a tuple (input_sequences, target_sequences, word_index, max_input_len, max_output_len)
 
-"""
-def corpus_maker(text):
-    lines = text.splitlines()
-    return lines
-
-def load_corpus():
-    return corpus_maker(text)
-
-corpus = load_corpus() # export corpus to model.py for training
-"""
 ### HELPER METHODS BELOW ###
 
 def print_sample():
